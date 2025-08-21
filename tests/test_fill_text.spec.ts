@@ -7,6 +7,14 @@ test.describe('Validar el formulario de registro en la pagina https://automation
 }
     let userName = 'User Test';
     let userEmail = generateRandomEmail();
+    let userPassword = 'Test1234';
+    const fields = [
+        { selector: '#first_name', value: 'Usuario' },
+        { selector: '#last_name', value: 'Test' },
+        { selector: '#company', value: 'Company QA' },
+        { selector: '#address1', value: '6 street' },
+        { selector: '#address2', value: '5 Avenue' }
+    ]
     test.beforeEach('Ingresar a la pagina', async ({ page }) => {
         await page.goto('https://automationexercise.com/');
         await expect(page).toHaveURL('https://automationexercise.com/');
@@ -24,7 +32,21 @@ test.describe('Validar el formulario de registro en la pagina https://automation
             await page.getByRole('button', { name: 'Signup' }).click();
             await test.step('Verificar que el correo es válido', async () => {
                 if (await page.getByText('Enter Account Information').isVisible()) {
+                    await test.step('Al completar el formulario de registro', async () => {
+                    await expect(page.getByRole('textbox', { name: 'Name *', exact: true }), 'El nombre en el formulario no es el del user')
+                    .toHaveValue(userName);
                     await page.getByRole('radio', { name: 'Mr.' }).click();
+                    await page.getByRole('textbox', { name: 'Password *' }).fill(userPassword);
+                    await page.locator('#days').selectOption('1');
+                    await page.locator('#months').selectOption('January');
+                    await page.locator('#years').selectOption('1990');
+                    await page.getByRole('checkbox', { name: 'Sign up for our newsletter!' }).check();
+                    await expect(page.getByRole('checkbox', { name: 'Sign up for our newsletter!' })).toBeChecked();
+                    await expect(page.getByRole('checkbox', { name: 'Receive special offers from' })).not.toBeChecked();
+                    for (const field of fields) {
+                        await page.locator(field.selector).fill(field.value);
+                    }
+                });
                 }else {
                     console.log('El correo electrónico ya está registrado o no es válido.');
                     return;
