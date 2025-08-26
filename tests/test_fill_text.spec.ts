@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, selectors } from '@playwright/test';
 
 test.describe('Validar el formulario de registro en la pagina https://automationexercise.com/', () => {
     function generateRandomEmail(): string {
@@ -13,7 +13,11 @@ test.describe('Validar el formulario de registro en la pagina https://automation
         { selector: '#last_name', value: 'Test' },
         { selector: '#company', value: 'Company QA' },
         { selector: '#address1', value: '6 street' },
-        { selector: '#address2', value: '5 Avenue' }
+        { selector: '#address2', value: '5 Avenue' },
+        { selector : '#state', value: 'State Test' },
+        { selector: '#city', value: 'City Test' },
+        { selector: '#zipcode', value: '110110' },
+        { selector: '#mobile_number', value: '1234567890' }
     ]
     test.beforeEach('Ingresar a la pagina', async ({ page }) => {
         await page.goto('https://automationexercise.com/');
@@ -43,8 +47,16 @@ test.describe('Validar el formulario de registro en la pagina https://automation
                     await page.getByRole('checkbox', { name: 'Sign up for our newsletter!' }).check();
                     await expect(page.getByRole('checkbox', { name: 'Sign up for our newsletter!' })).toBeChecked();
                     await expect(page.getByRole('checkbox', { name: 'Receive special offers from' })).not.toBeChecked();
+                    await page.getByLabel('Country *').selectOption('United States');
                     for (const field of fields) {
                         await page.locator(field.selector).fill(field.value);
+                    }
+                    await page.getByRole('button', { name: 'Create Account' }).click();
+                    if (await page.getByText('Account Created!').isVisible()) {
+                        console.log('El usuario ha sido creado exitosamente con el correo:', userEmail);
+                        await page.getByRole('link', { name: 'Continue' }).click();
+                    }else {
+                        throw new Error('No se pudo crear el usuario.');
                     }
                 });
                 }else {
