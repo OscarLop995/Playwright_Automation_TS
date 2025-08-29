@@ -1,12 +1,9 @@
 import { test, expect, selectors } from '@playwright/test';
+import { generateRandomEmail } from '../utils/generate_random_email';
 
 test.describe('Validar el formulario de registro en la pagina https://automationexercise.com/', () => {
-    function generateRandomEmail(): string {
-        const randomString = Math.random().toString(36).substring(2, 10);
-        return `user_${randomString}@testmail.com`;
-}
     let userName = 'User Test';
-    let userEmail = generateRandomEmail();
+    const userEmail = generateRandomEmail();
     let userPassword = 'Test1234';
     const fields = [
         { selector: '#first_name', value: 'Usuario' },
@@ -25,7 +22,7 @@ test.describe('Validar el formulario de registro en la pagina https://automation
         test.step('Al hacer clic en el botón de Signup / Login', async () => {
             await page.getByRole('link', { name: ' Signup / Login' }).click();
             await expect(page).toHaveURL('https://automationexercise.com/login');
-        }); 
+        });  
     });
     test('Ingresar datos del usuario', async ({ page }) => {
         await test.step('Al ingresar el nombre y correo electronico', async () => {
@@ -63,7 +60,21 @@ test.describe('Validar el formulario de registro en la pagina https://automation
                     console.log('El correo electrónico ya está registrado o no es válido.');
                     return;
                 }
-            });     
+            });  
+        });
+        await test.step('Verificar usuario loggeado', async () => {
+            await expect(page.getByText(`Logged in as ${userName}`), 'No fue posible verificar el usuario loggeado').toBeVisible();
+        });
+        await test.step('Eliminar usuario creado', async () => {
+            await page.getByRole('link', { name: ' Delete Account' }).click();
+        });
+        await test.step('Verificar que el usuario fue eliminado', async () => {
+            if (await page.getByText('Account Deleted!').isVisible()) {
+                        console.log('El usuario ha sido eliminado exitosamente');
+                        await page.getByRole('link', { name: 'Continue' }).click();
+                    }else {
+                        throw new Error('Error eliminando el usuario.');
+                    }
         });
     });
 });
